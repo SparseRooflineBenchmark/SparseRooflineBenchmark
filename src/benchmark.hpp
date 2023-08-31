@@ -56,7 +56,7 @@ void npy_store_vector(std::string fname, std::vector<T> vec) {
 
 void experiment(std::string input, std::string output, int verbose);
 
-int run(int argc, char **argv) {
+int main(int argc, char **argv) {
   // Define the long options
   static struct option long_options[] = {
     {"help", no_argument, 0, 'h'},

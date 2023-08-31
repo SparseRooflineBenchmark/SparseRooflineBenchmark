@@ -66,7 +66,3 @@ void experiment_spmv_csr(std::string input, std::string output, int verbose){
     measurements_file << measurements;
     measurements_file.close();
 }
-
-int main(int argc, char **argv) {
-    return run(argc, argv);
-}
