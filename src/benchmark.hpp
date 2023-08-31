@@ -8,6 +8,8 @@
 #include "npy.hpp"
 #include "json.hpp"
 
+using json = nlohmann::json;
+
 #define TIME_MAX 5.0
 #define TRIAL_MAX 10000
 
@@ -38,23 +40,23 @@ long long benchmark(Setup setup, Test test){
 }
 
 template <typename T>
-std::vector{T} npy_load_vector(std::string fname) {
-  new std::vector{T} vec;
-  std::vector{T} shape;
+std::vector<T> npy_load_vector(std::string fname) {
+  std::vector<T> vec;
+  std::vector<unsigned long> shape;
   bool fortran_order;
-  LoadArrayFromNumpy(fname, shape, fortran_order, vec);
+  npy::LoadArrayFromNumpy<T>(fname, shape, fortran_order, vec);
   return vec;
 }
 
 template <typename T>
 void npy_store_vector(std::string fname, std::vector<T> vec) {
-  SaveArrayAsNumpy(fname, false, 1, vec.size(), vec);
-  return vec;
+  std::vector<unsigned long> shape = {vec.size(),};
+  npy::SaveArrayAsNumpy(fname, false, shape.size(), shape.data(), vec);
 }
 
 void experiment(std::string input, std::string output, int verbose);
 
-int main(int argc, char **argv) {
+int run(int argc, char **argv) {
   // Define the long options
   static struct option long_options[] = {
     {"help", no_argument, 0, 'h'},
