@@ -9,8 +9,8 @@ template <typename T, typename I>
 void experiment_spmv_csr(std::string input, std::string output, int verbose);
 
 void experiment(std::string input, std::string output, int verbose){
-    auto A_desc = json::parse(std::ifstream(fs::path(input)/"A.bsp.npyd"/"binsparse.json")); 
-    auto x_desc = json::parse(std::ifstream(fs::path(input)/"x.bsp.npyd"/"binsparse.json")); 
+    auto A_desc = json::parse(std::ifstream(fs::path(input)/"A.bspnpy"/"binsparse.json")); 
+    auto x_desc = json::parse(std::ifstream(fs::path(input)/"x.bspnpy"/"binsparse.json")); 
 
     if (A_desc["format"] != "CSR") {throw std::runtime_error("Only CSR format for A is supported");}
     if (x_desc["format"] != "DVEC") {throw std::runtime_error("Only dense format for x is supported");}
@@ -27,16 +27,16 @@ void experiment(std::string input, std::string output, int verbose){
 
 template <typename T, typename I>
 void experiment_spmv_csr(std::string input, std::string output, int verbose){
-    auto A_desc = json::parse(std::ifstream(fs::path(input)/"A.bsp.npyd"/"binsparse.json")); 
-    auto x_desc = json::parse(std::ifstream(fs::path(input)/"x.bsp.npyd"/"binsparse.json")); 
+    auto A_desc = json::parse(std::ifstream(fs::path(input)/"A.bspnpy"/"binsparse.json")); 
+    auto x_desc = json::parse(std::ifstream(fs::path(input)/"x.bspnpy"/"binsparse.json")); 
 
     int m = A_desc["shape"][0];
     int n = A_desc["shape"][1];
 
-    auto x_val = npy_load_vector<T>(fs::path(input)/"x.bsp.npyd"/"values.npy");
-    auto A_ptr = npy_load_vector<I>(fs::path(input)/"A.bsp.npyd"/"pointers_to_1.npy");
-    auto A_idx = npy_load_vector<I>(fs::path(input)/"A.bsp.npyd"/"indices_1.npy");
-    auto A_val = npy_load_vector<T>(fs::path(input)/"A.bsp.npyd"/"values.npy");
+    auto x_val = npy_load_vector<T>(fs::path(input)/"x.bspnpy"/"values.npy");
+    auto A_ptr = npy_load_vector<I>(fs::path(input)/"A.bspnpy"/"pointers_to_1.npy");
+    auto A_idx = npy_load_vector<I>(fs::path(input)/"A.bspnpy"/"indices_1.npy");
+    auto A_val = npy_load_vector<T>(fs::path(input)/"A.bspnpy"/"values.npy");
 
     auto y_val = std::vector<T>(m, 0);
 
@@ -54,18 +54,18 @@ void experiment_spmv_csr(std::string input, std::string output, int verbose){
         }
     );
 
-    std::filesystem::create_directory(fs::path(output)/"y.bsp.npyd");
+    std::filesystem::create_directory(fs::path(output)/"y.bspnpy");
     json y_desc;
     y_desc["version"] = 0.5;
     y_desc["format"] = "DVEC";
     y_desc["shape"] = {n};
     y_desc["nnz"] = n;
     y_desc["data_types"]["values_type"] = "float64";
-    std::ofstream y_desc_file(fs::path(output)/"y.bsp.npyd"/"binsparse.json");
+    std::ofstream y_desc_file(fs::path(output)/"y.bspnpy"/"binsparse.json");
     y_desc_file << y_desc;
     y_desc_file.close();
 
-    npy_store_vector<T>(fs::path(output)/"y.bsp.npyd"/"values.npy", y_val);
+    npy_store_vector<T>(fs::path(output)/"y.bspnpy"/"values.npy", y_val);
 
     json measurements;
     measurements["time"] = time;
