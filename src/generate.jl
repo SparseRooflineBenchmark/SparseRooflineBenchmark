@@ -24,13 +24,13 @@ function generate(problem, name, dst, ext, args...)
 end
 
 function spmv(dst, ext, mtx)
-    A = copyto!(Fiber!(Dense(SparseList(Element(0.0)))), matrixdepot(mtx))
+    A = matrixdepot(mtx)
     m, n = size(A)
-    x = copyto!(Fiber!(Dense(Element(0.0))), rand(n))
-    y = copyto!(Fiber!(Dense(Element(0.0))), A * x)
-    Finch.fwrite(joinpath(dst, "y_ref.$ext"), y)
-    Finch.fwrite(joinpath(dst, "A.$ext"), A)
-    Finch.fwrite(joinpath(dst, "x.$ext"), x)
+    x = rand(n)
+    y = A * x
+    Finch.fwrite(joinpath(dst, "y_ref.$ext"), copyto!(Fiber!(Dense(Element(0.0))), y))
+    Finch.fwrite(joinpath(dst, "A.$ext"), copyto!(Fiber!(Dense(SparseList(Element(0.0)))), A))
+    Finch.fwrite(joinpath(dst, "x.$ext"), copyto!(Fiber!(Dense(Element(0.0))), x))
 end 
 
 generator["spmv"] = Dict()
