@@ -10,9 +10,9 @@ The SRBS uses Julia to generate datasets. To install Julia, please follow
 the instructions on the [Julia website](https://julialang.org/downloads/).
 
 An example reference C++ implementation is provided in the `example/` directory.
-All of the necessary files required to read a test dataset, run it, and produce
-the required output.json are provided as header-only dependencies. The only
-requirement is a C++20 compliant compiler.
+All of the necessary files required to read a test dataset and benchmark the
+implementation are provided as header-only dependencies. The only requirement is
+a C++20 compliant compiler.
 
 ## Usage
 
@@ -42,10 +42,9 @@ Options:
 
 Harnesses are provided to parse these arguments in several languages. To
 benchmark your implementation in C++, simply include the `main` function given
-in `src/benchmark.hpp`. This harness includes the necessary header-only
-dependencies to parse the arguments and read the input data. The harness will
-then call the `experiment` function, which is expected to benchmark the kernel
-and return the time taken to execute the kernel in seconds.
+in `src/benchmark.hpp`. This file includes the necessary header-only
+dependencies to parse the arguments and read the input data, and calls the
+`experiment` function, which is expected to benchmark the kernel.
 
 ## Formats
 
@@ -54,5 +53,6 @@ The SRBS uses the
 store tensors on disk and in memory. In particular, the header of the file is a
 JSON object that describes the dimensions and format of the tensor, and the data
 for the tensor is stored as a set of named vectors. These objects may all be
-stored in the same file, (e.g. [HDF5]() or [ZARR]()), or in separate files (e.g.
-[.npy]()).
+stored in the same file, (e.g. [HDF5](https://www.hdfgroup.org/solutions/hdf5/)
+or [ZARR](https://zarr.readthedocs.io/en/stable/)), or in separate files (e.g.
+[.npy](https://numpy.org/doc/stable/reference/generated/numpy.load.html)).
