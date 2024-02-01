@@ -17,10 +17,10 @@ a C++20 compliant compiler.
 ## Usage
 
 Once Julia is installed, you can generate test data for a particular problem
-with the `bin/generate.jl` script:
+with the `src/generate.jl` script:
 
 ```bash
-% julia bin/generate.jl --help
+% julia src/generate.jl --help
 ```
 
 The script will generate a dataset for a particular problem and write it to

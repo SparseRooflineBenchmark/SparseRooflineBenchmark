@@ -1,1 +1,4 @@
 *.o
+data/*
+out/*
+*/Manifest.toml
