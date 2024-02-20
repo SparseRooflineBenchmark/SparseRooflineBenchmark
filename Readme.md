@@ -41,8 +41,7 @@ Options:
 ```
 
 Harnesses are provided to parse these arguments in several languages. To
-benchmark your implementation in C++, simply include the `main` function given
-in `src/benchmark.hpp`. This file includes the necessary header-only
+benchmark your implementation in C++, simply include `src/benchmark.hpp`. This file includes the necessary header-only
 dependencies to parse the arguments and read the input data, and calls the
 `experiment` function, which is expected to benchmark the kernel.
 
