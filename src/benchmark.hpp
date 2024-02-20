@@ -13,15 +13,21 @@ using json = nlohmann::json;
 #define TIME_MAX 5.0
 #define TRIAL_MAX 10000
 
-template <typename Setup, typename Test>
-long long benchmark(Setup setup, Test test){
+/*
+  Benchmark a function `run` by running it multiple times and measuring the
+  time. The function `setup` is called before each run to prepare the input
+  data. The function returns the minimum time in nanoseconds of all the runs.
+  Runs at most `TRIAL_MAX` times or until the total time exceeds `TIME_MAX`.
+*/
+template <typename Setup, typename Run>
+long long benchmark(Setup setup, Run run){
   auto time_total = std::chrono::high_resolution_clock::duration(0);
   auto time_min = std::chrono::high_resolution_clock::duration(0);
   int trial = 0;
   while(trial < TRIAL_MAX){
     setup();
     auto tic = std::chrono::high_resolution_clock::now();
-    test();
+    run();
     auto toc = std::chrono::high_resolution_clock::now();
     if(toc < tic){
       exit(EXIT_FAILURE);
@@ -56,7 +62,15 @@ void npy_store_vector(std::string fname, std::vector<T> vec) {
 
 void experiment(std::string input, std::string output, int verbose);
 
-int main(int argc, char **argv) {
+struct benchmark_params_t {
+  std::string input;
+  std::string output;
+  bool verbose;
+  int argc;
+  char **argv;
+};
+
+benchmark_params_t parse(int argc, char **argv) {
   // Define the long options
   static struct option long_options[] = {
     {"help", no_argument, 0, 'h'},
@@ -69,27 +83,26 @@ int main(int argc, char **argv) {
   // Parse the options
   int option_index = 0;
   int c;
-  std::string input_path;
-  std::string output_path;
-  bool verbose = false;
+  benchmark_params_t params;
+  params.verbose = false;
   while ((c = getopt_long(argc, argv, "hi:o:v", long_options, &option_index)) != -1) {
     switch (c) {
       case 'h':
-        std::cout << "Usage: " << argv[0] << " [OPTIONS]" << std::endl;
         std::cout << "Options:" << std::endl;
         std::cout << "  -h, --help      Print this help message" << std::endl;
         std::cout << "  -i, --input     Specify the path for the inputs" << std::endl;
         std::cout << "  -o, --output    Specify the path for the outputs" << std::endl;
         std::cout << "  -v, --verbose   Print verbose output" << std::endl;
-        return 0;
+        std::cout << "  --              Kernel-specific arguments" << std::endl;
+        exit(0);
       case 'i':
-        input_path = optarg;
+        params.input = optarg;
         break;
       case 'o':
-        output_path = optarg;
+        params.output = optarg;
         break;
       case 'v':
-        verbose = true;
+        params.verbose = true;
         break;
       case '?':
         // getopt_long already printed an error message
@@ -100,18 +113,20 @@ int main(int argc, char **argv) {
   }
 
   // Check that all required options are present
-  if (input_path.empty() || output_path.empty()) {
+  if (params.input.empty() || params.output.empty()) {
     std::cerr << "Missing required option" << std::endl;
-    return 1;
+    exit(1);
   }
-
-  experiment(input_path, output_path, verbose);
 
   // Print verbose output if requested
-  if (verbose) {
-    std::cout << "Input path: " << input_path << std::endl;
-    std::cout << "Output path: " << output_path << std::endl;
+  if (params.verbose) {
+    std::cout << "Input path: " << params.input << std::endl;
+    std::cout << "Output path: " << params.output << std::endl;
   }
 
-  return 0;
+  // Store the remaining command-line arguments
+  params.argc = argc - optind;
+  params.argv = argv + optind;
+
+  return params;
 }
