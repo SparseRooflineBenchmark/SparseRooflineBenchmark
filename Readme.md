@@ -24,8 +24,7 @@ with the `src/generate.jl` script:
 ```
 
 The script will generate a dataset for a particular problem and write it to
-the given destination. If the script runs with errors about missing packages,
-follow the instructions to download the appropriate packages. 
+the given destination. 
 
 For example, to generate RMAT data for spmv in the default location under
 `./data/` run the following command: 
