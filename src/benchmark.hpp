@@ -125,8 +125,8 @@ benchmark_params_t parse(int argc, char **argv) {
   }
 
   // Store the remaining command-line arguments
-  params.argc = argc - optind;
-  params.argv = argv + optind;
+  params.argc = argc - optind + 1;
+  params.argv = argv + optind - 1;
 
   return params;
 }
