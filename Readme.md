@@ -24,7 +24,13 @@ with the `src/generate.jl` script:
 ```
 
 The script will generate a dataset for a particular problem and write it to
-the given destination.
+the given destination. 
+
+For example, to generate RMAT data for spmv in the default location under
+`./data/` run the following command: 
+```bash
+% julia src/generate.jl spmv rmat 
+```
 
 Implementations of a given kernel are expected to be given as executables that
 take the same arguments as the reference implementation. All of the
@@ -38,6 +44,13 @@ Options:
   -i, --input     Specify the path for the inputs
   -o, --output    Specify the path for the outputs
   -v, --verbose   Print verbose output
+```
+
+The above example implementation can be generated from `examples/spmv.cpp`. 
+An example command to generate the executable using g++ is:
+```bash
+cd examples/
+g++ -std=c++20 -o spmv spmv.cpp
 ```
 
 Harnesses are provided to parse these arguments in several languages. To
