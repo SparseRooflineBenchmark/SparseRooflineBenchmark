@@ -52,9 +52,10 @@ void experiment_spmv_csr(benchmark_params_t params){
     []() {
     },
         [&y_val, &A_ptr, &A_val, &A_idx, &x_val, &m, &n]() {
-            for(int j = 0; j < m; j++){
-                for(int p = A_ptr[j]; p < A_ptr[j+1]; p++){
-                    y_val[j] += A_val[p] * x_val[A_idx[p]];
+            for(int i = 0; i < m; i++){
+                for(int p = A_ptr[i]; p < A_ptr[i+1]; p++){
+                    int j = A_idx[p];
+                    y_val[i] += A_val[p] * x_val[j];
                 }
             }
         }

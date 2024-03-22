@@ -3,7 +3,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     Pkg.activate(@__DIR__, io = devnull)
     Pkg.instantiate()
 end
-
 module Utils
     using Random
     using Base.Iterators
@@ -65,6 +64,7 @@ module Utils
 end
 
 module Generate
+     
     using Comonicon
 
     """
@@ -88,6 +88,7 @@ module Generate
         using HDF5
         using Random
         using Base.Iterators
+        using JSON
 
         """
         generate spmv suitesparse
@@ -108,14 +109,18 @@ module Generate
         - `-e, --ext <extension>`: generated tensor file format extension
         
         """
-        @cast function suitesparse(key; out = joinpath(@__DIR__, "../data"), ext="bspnpy")
+        @cast function suitesparse(key; out = joinpath(@__DIR__, "../data"), ext="bspnpy", seed = rand(UInt))
+            Random.seed!(seed)
             A = SparseMatrixCSC(matrixdepot(key))
             m, n = size(A)
             x = rand(n)
             y = A * x
             Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
-            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(Tensor(Dense(SparseList(Element(0.0)))), 2, 1), A))
+            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(SparseList(Element(0.0)))), (2, 1)), 2, 1), A))
             Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
+            open(joinpath(out, "seed.json"), "w") do f
+                JSON.print(f, Dict("seed"=>seed))
+            end
         end
 
         vuduc02_matrices = [
@@ -208,16 +213,51 @@ module Generate
         
         """
         @cast function RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_factor=0.57, B_factor=0.19, C_factor=0.19, N=10, p=0.001, seed=rand(UInt))
+            Random.seed!(seed)
             D_factor = 1-(A_factor+B_factor+C_factor)
-            seed = [A_factor B_factor; C_factor D_factor]
-            A = sparse(stockronrand(Float64, Iterators.repeated(seed, N), p)...)
+            abcd = [A_factor B_factor; C_factor D_factor]
+            A = sparse(stockronrand(Float64, Iterators.repeated(abcd, N), p)...)
             m, n = size(A)
             x = rand(n)
             y = A * x
             Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
-            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(Tensor(Dense(SparseList(Element(0.0)))), 2, 1), A))
+            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(SparseList(Element(0.0)))), (2, 1)), 2, 1), A))
             Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
+            open(joinpath(out, "seed.json"), "w") do f
+                JSON.print(f, Dict("seed"=>seed))
+            end
         end
+
+        """
+        dense generator
+        
+        # Intro
+        specify a particular size for matrix and seed for dense generation
+        
+        # Options
+        
+        - `-o, --out=</data>`: destination directory for the generated problem instances
+        - `-e, --ext <extension>`: generated tensor file format extension
+        - `-m, --m <value>`: number of rows
+        - `-n, --n <value>`: number of columns
+        - `-s, --seed <value>`: random seed
+        
+        """
+        @cast function dense(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", m = 1000, n = 1000, seed = rand(UInt))
+            Random.seed!(seed);
+            A = rand(m, n)
+            x = rand(n)
+            y = A * x
+            Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
+            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(Dense(Element(0.0)))), (2, 1)), 2, 1), A))
+            Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
+            open(joinpath(out, "seed.json"), "w") do f
+                JSON.print(f, Dict("seed" => seed))
+            end
+            
+        end
+
+
     end
 
     @cast SpMV
