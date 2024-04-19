@@ -213,6 +213,7 @@ module Generate
         
         """
         @cast function RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_factor=0.57, B_factor=0.19, C_factor=0.19, N=10, p=0.001, seed=rand(UInt))
+            error()
             Random.seed!(seed)
             D_factor = 1-(A_factor+B_factor+C_factor)
             abcd = [A_factor B_factor; C_factor D_factor]
