@@ -4,7 +4,7 @@ function fail {
     exit 1
 }
 
-julia src/generate.jl spmv rmat || fail
+julia src/generate.jl spmv rmat || fail()
 
 exit 0
 
