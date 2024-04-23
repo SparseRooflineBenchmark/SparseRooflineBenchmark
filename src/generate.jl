@@ -110,6 +110,7 @@ module Generate
         
         """
         @cast function suitesparse(key; out = joinpath(@__DIR__, "../data"), ext="bspnpy", seed = rand(UInt))
+            error()
             Random.seed!(seed)
             A = SparseMatrixCSC(matrixdepot(key))
             m, n = size(A)
