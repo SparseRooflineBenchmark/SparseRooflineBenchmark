@@ -30,5 +30,6 @@ jobs:
                     arch: ${{ matrix.arch }}
             - uses: julia-actions/julia-buildpkg@v1
             - run: ./build.sh
+              shell: bash
             
 
