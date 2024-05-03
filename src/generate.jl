@@ -210,21 +210,28 @@ module Generate
         - `-N, --N <value>`: use 2^N as the matrix size
         - `-p, --p <value>`: density (1 - sparsity) of the generated matrix
         - `-s, --seed <value>`: random seed
+        - `-S, --sample_size <value>`: number of sample problems to generate
         
         """
-        @cast function RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_factor=0.57, B_factor=0.19, C_factor=0.19, N=10, p=0.001, seed=rand(UInt))
+        @cast function RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_factor=0.57, B_factor=0.19, C_factor=0.19, N=10, p=0.001, seed=rand(UInt), sample_size=100)
             Random.seed!(seed)
-            D_factor = 1-(A_factor+B_factor+C_factor)
-            abcd = [A_factor B_factor; C_factor D_factor]
-            A = sparse(stockronrand(Float64, Iterators.repeated(abcd, N), p)...)
-            m, n = size(A)
-            x = rand(n)
-            y = A * x
-            Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
-            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(SparseList(Element(0.0)))), (2, 1)), 2, 1), A))
-            Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
-            open(joinpath(out, "seed.json"), "w") do f
-                JSON.print(f, Dict("seed"=>seed))
+            mkpath(out)
+            for i = 1:sample_size
+                instance_out = joinpath(out, "instance_$i")
+                mkpath(instance_out)
+                D_factor = 1-(A_factor+B_factor+C_factor)
+                abcd = [A_factor B_factor; C_factor D_factor]
+                A = sparse(stockronrand(Float64, Iterators.repeated(abcd, N), p)...)
+                m, n = size(A)
+                x = rand(n)
+                y = A * x
+
+                Finch.fwrite(joinpath(instance_out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
+                Finch.fwrite(joinpath(instance_out, "A.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(SparseList(Element(0.0)))), (2, 1)), 2, 1), A))
+                Finch.fwrite(joinpath(instance_out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
+                open(joinpath(instance_out, "instance.json"), "w") do f
+                    JSON.print(f, Dict("instance"=>i, "seed"=>seed))
+                end
             end
         end
 
