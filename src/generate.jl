@@ -262,6 +262,65 @@ module Generate
 
     @cast SpMV
 
+     
+    """
+        spmm
+    
+    y[i][k] += A[i, j] * X[j, k]
+
+    # Intro
+
+    sparse matrix- matrix multiplication
+    """
+    module SpMM
+        using Comonicon
+        using ...Utils: stockronrand
+        using Suppressor
+        @suppress using MatrixDepot
+        using Finch
+        using TensorMarket
+        using SparseArrays
+        using NPZ
+        using HDF5
+        using Random
+        using Base.Iterators
+        using JSON
+
+        """
+        erdos_renyi dataset
+        
+        # Intro
+        specify a particular dense dimension d for the matrix X
+        
+        # Options
+        
+        - `-o, --out=</data>`: destination directory for the generated problem instances
+        - `-e, --ext <extension>`: generated tensor file format extension
+        - `-d, --d <value>`: d dimension
+        
+        """
+        @cast function erdos_renyi(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", d = 8, seed = rand(UInt))
+            Random.seed!(seed)
+            m = floor(Int, 10^(4+rand()*2))
+            n = floor(Int, 10^(4+rand()*2))
+
+            A = sparse(fsprand(Float64, m, n, 10^6))
+            X = rand(n, d)
+            Y_ref = A * X
+
+            Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(Dense(Element(0.0)))), (2, 1)), 2, 1), A))
+            Finch.fwrite(joinpath(out, "X.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(Dense(Element(0.0)))), (2, 1)), 2, 1), X))
+            Finch.fwrite(joinpath(out, "Y_ref.$ext"), copyto!(swizzle(permutedims(Tensor(Dense(Dense(Element(0.0)))), (2, 1)), 2, 1), Y_ref))
+            open(joinpath(out, "seed.json"), "w") do f
+                JSON.print(f, Dict("seed" => seed))
+            end
+        end
+
+        
+    end
+
+    @cast SpMM
+
     @main
 
 end # module
