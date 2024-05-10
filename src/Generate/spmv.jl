@@ -8,7 +8,7 @@ function spmv_suitesparse_command(args; kwargs...)
 
     Options:
         -o, --out <path>    Output file path [default: ../data]
-        -e, --ext <ext>     Output file extensions [default: ttx]
+        -e, --ext <ext>     Output file extensions [default: bspnpy]
         <key>               matrix key
         -h, --help          show this screen
     """ 
@@ -24,7 +24,7 @@ function spmv_suitesparse_command(args; kwargs...)
     )
 end
 
-function spmv_suitesparse(key; out = joinpath(@__DIR__, "../data"), ext="ttx")
+function spmv_suitesparse(key; out = joinpath(@__DIR__, "../data"), ext="bspnpy")
     A = SparseMatrixCSC(matrixdepot(key))
     m, n = size(A)
     x = rand(n)
@@ -79,7 +79,7 @@ vuduc02_matrices = [
     "Qaplib/lp_nug20"
 ]
 
-function vuduc02_command(args; kwargs...)
+function spmv_vuduc02_command(args; kwargs...)
     doc = """Generate spmv problem instances from the paper:
 
     R. Vuduc, J. W. Demmel, K. A. Yelick, S. Kamil, R. Nishtala, and B. Lee,
@@ -104,13 +104,13 @@ function vuduc02_command(args; kwargs...)
     )
 end
 
-@cast function vuduc02(out = joinpath(@__DIR__, "../data"), ext="bspnpy")
+function spmv_vuduc02(; out = joinpath(@__DIR__, "../data"), ext="bspnpy")
     for matrix_key in vuduc02_matrices
-        suitesparse(matrix_key; out = joinpath(out, matrix_key), ext=ext)
+        spmv_suitesparse(matrix_key; out = joinpath(out, matrix_key), ext=ext)
     end
 end
 
-spmv_commands["vuduc02"] = vuduc02_command
+spmv_commands["vuduc02"] = spmv_vuduc02_command
 
 langr_matrices = [
     "Buss/12month1", "Sinclair/3Dspectralwave2", "Schenk_AFE/af_shell10", "SNAP/amazon0312",
@@ -121,27 +121,33 @@ langr_matrices = [
     "Rucci/Rucci1", "Mittelmann/spal_004", "Schmid/thermal2", "TSOPF/TSOPF_RS_b2383", "Gleich/wb-edu",
     "Gleich/wikipedia-20061104", "VanVelzen/Zd_Jac2"
 ]
-"""
-generate spmv langr
 
-generate an instance of SpMV from the SuiteSparse matrix collection
+function spmv_langr_command(args; kwargs...)
+    doc = """Generate spmv problem instances from the Langr collection.
 
-# Intro
+    Usage:
+        generate.jl spmv langr [options]
+        generate.jl spmv langr --help
 
-generate an instance of SpMV from the SuiteSparse matrix collection
-
-# Options
-
-- `-o, --out=</data>`: destination directory for the generated problem instances
-- `-e, --ext <extension>`: generated tensor file format extension
-
-"""
-@cast function langr(out = joinpath(@__DIR__, "../data"), ext="bspnpy")
-    for matrix_key in langr_matrices
-        suitesparse(matrix_key; out = joinpath(out, matrix_key), ext=ext)
-    end
-
+    Options:
+        -o, --out=<path>    Output file path [default: ../data]
+        -e, --ext=<ext>     Output file extensions [default: bspnpy]
+        -h, --help          Show this screen.
+    """
+    parsed_args = docopt(doc, args)
+    langr(
+        out=parsed_args["--out"],
+        ext=parsed_args["--ext"]
+    )
 end
+
+function spmv_langr(; out = joinpath(@__DIR__, "../data"), ext="bspnpy")
+    for matrix_key in langr_matrices
+        spmv_suitesparse(matrix_key; out = joinpath(out, matrix_key), ext=ext)
+    end
+end
+
+spmv_commands["langr"] = spmv_langr_command
 
 function spmv_RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_factor=0.57, B_factor=0.19, C_factor=0.19, N=10, p=0.001, seed=rand(UInt))
     D_factor = 1-(A_factor+B_factor+C_factor)
