@@ -29,7 +29,7 @@ the given destination.
 For example, to generate RMAT data for spmv in the default location under
 `./data/` run the following command: 
 ```bash
-% julia src/Generator/Generator.jl spmv rmat 
+% julia src/Generator/Generator.jl spmv RMAT
 ```
 
 Implementations of a given kernel are expected to be given as executables that

@@ -44,7 +44,7 @@ function spmv_RMAT_command(args; kwargs...)
             generate.jl spmv RMAT --help
 
         Options:
-            -o, --out=</data>    Destination directory for the generated problem instances [default: ../data]
+            -o, --out <path>    Destination directory for the generated problem instances [default: ../data]
             -e, --ext <extension>    Generated tensor file format extension [default: bspnpy]
             -A, --A_factor <value>    Factor A in seed matrix [default: 0.57]
             -B, --B_factor <value>    Factor B in seed matrix [default: 0.19]
