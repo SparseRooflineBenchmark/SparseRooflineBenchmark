@@ -17,10 +17,10 @@ a C++20 compliant compiler.
 ## Usage
 
 Once Julia is installed, you can generate test data for a particular problem
-with the `src/generate.jl` script:
+with the `src/Generator/Generator.jl` script:
 
 ```bash
-% julia src/generate.jl --help
+% julia src/Generator/Generator.jl --help
 ```
 
 The script will generate a dataset for a particular problem and write it to
@@ -29,7 +29,7 @@ the given destination.
 For example, to generate RMAT data for spmv in the default location under
 `./data/` run the following command: 
 ```bash
-% julia src/generate.jl spmv rmat 
+% julia src/Generator/Generator.jl spmv rmat 
 ```
 
 Implementations of a given kernel are expected to be given as executables that
