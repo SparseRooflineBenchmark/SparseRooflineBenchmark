@@ -110,8 +110,6 @@ function spmv_vuduc02(; out = joinpath(@__DIR__, "../data"), ext="bspnpy")
     end
 end
 
-spmv_commands["vuduc02"] = spmv_vuduc02_command
-
 langr_matrices = [
     "Buss/12month1", "Sinclair/3Dspectralwave2", "Schenk_AFE/af_shell10", "SNAP/amazon0312",
     "Bourchtein/atmosmodj", "GHS_psdef/bmw7st_1", "vanHeukelum/cage12", "vanHeukelum/cage15",
@@ -147,8 +145,6 @@ function spmv_langr(; out = joinpath(@__DIR__, "../data"), ext="bspnpy")
     end
 end
 
-spmv_commands["langr"] = spmv_langr_command
-
 function spmv_RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_factor=0.57, B_factor=0.19, C_factor=0.19, N=10, p=0.001, seed=rand(UInt))
     D_factor = 1-(A_factor+B_factor+C_factor)
     seed = [A_factor B_factor; C_factor D_factor]
@@ -165,6 +161,8 @@ end
 spmv_commands = Dict(
     "suitesparse" => spmv_suitesparse_command,
     "RMAT" => spmv_RMAT_command,
+    "vuduc02" => spmv_vuduc02_command,
+    "langr" => spmv_langr_command
 )
 function spmv_command(args)
     doc = """Generate spmv problem instances.
