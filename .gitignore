@@ -1,6 +1,8 @@
 *.o
 data/*
 out/*
+Manifest.toml
 */Manifest.toml
+*/*/Manifest.toml
 *.json
 *.bspnpy
