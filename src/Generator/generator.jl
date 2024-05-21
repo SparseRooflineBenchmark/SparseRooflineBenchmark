@@ -18,10 +18,12 @@ using StatsBase
 
 include("util.jl")
 include("spmv.jl")
+include("spmspv.jl")
 
 kernel_commands = Dict(
     "spmv" => spmv_command,
 #    "spmm" => spmm_command,
+    "spmspv" => spmspv_command
 )
 
 function main(args)
@@ -32,6 +34,8 @@ function main(args)
             y[i] += A[i, j] * x[j]
         spmm
             Y[i, d] += A[i, j] * X[j, d]
+        spmspv
+            y[i] += A[i, j] * x[j]
 
     see generate.jl <kernel> --help for more information on each kernel
 
