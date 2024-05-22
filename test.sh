@@ -8,7 +8,12 @@ function fail {
     exit 1
 }
 
-julia src/Generator/generator.jl spmv RMAT || fail
+
+julia src/Generator/generator.jl spmv RMAT -o data || fail
+
+cd example; make; cd -;
+
+./example/spmv -i data -o data || fail
 
 exit 0
 
