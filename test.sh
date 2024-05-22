@@ -15,5 +15,9 @@ cd example; make; cd -;
 
 ./example/spmv -i data -o data || fail
 
+julia src/Generator/generator.jl spmm -o data || fail
+
+./example/spmm -i data -o data || fail
+
 exit 0
 
