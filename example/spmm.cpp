@@ -53,18 +53,18 @@ void experiment_spmm_csr(benchmark_params_t params){
     auto X_val = npy_load_vector<T>(fs::path(params.input)/"X.bspnpy"/"values.npy");
 
 
-    auto Y_val = std::vector<T>(m, std::vector<T>(d, 0));
+    auto Y_val = std::vector<T>(m*d, 0);
 
     auto time = benchmark(
     []() {
     },
-        [&y_val, &A_ptr, &A_val, &A_idx, &X_ptr, &A_val, &X_idx, &m, &k, &d]() {
+        [&Y_val, &A_ptr, &A_val, &A_idx, &X_ptr, &X_val, &X_idx, &m, &k, &d]() {
             for (int i = 0; i < m; i++) {
                 for (int p = A_ptr[i]; p < A_ptr[i + 1]; p++) {
                     int j = A_idx[p];
                     for (int l = X_ptr[j]; l < X_ptr[j + 1]; l++) {
                         int n = X_idx[l];
-                        Y_val[i][n] += A_val[p] * X_val[l];
+                        Y_val[i*m+n] += A_val[p] * X_val[l];
                     }
                 }
             }
@@ -75,7 +75,7 @@ void experiment_spmm_csr(benchmark_params_t params){
     json y_desc;
     y_desc["version"] = 0.5;
     y_desc["format"] = "CSR";
-    y_desc["shape"] = {m, d};
+    y_desc["shape"] = {m*d};
     y_desc["nnz"] = m*d;
     y_desc["data_types"]["values_type"] = "float64";
     std::ofstream y_desc_file(fs::path(params.output)/"Y.bspnpy"/"binsparse.json");
