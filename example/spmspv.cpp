@@ -10,12 +10,12 @@ void experiment_spmspv_csr(benchmark_params_t params);
 
 int main(int argc, char **argv){
     auto params = parse(argc, argv);
-    auto A_desc = json::parse(std::ifstream(fs::path(params.input)/"A.bspnpy"/"binsparse.json"))["binsparse"]; 
-    auto x_desc = json::parse(std::ifstream(fs::path(params.input)/"x.bspnpy"/"binsparse.json"))["binsparse"]; 
+    auto A_desc = json::parse(std::ifstream(fs::path(params.input)/"A.bspnpy"/"binsparse.json"))["binsparse"];
+    auto x_desc = json::parse(std::ifstream(fs::path(params.input)/"x.bspnpy"/"binsparse.json"))["binsparse"];
 
     //print format
     if (A_desc["format"] != "CSR") {throw std::runtime_error("Only CSR format for A is supported");}
-    if (x_desc["format"] != "DVEC") {throw std::runtime_error("Only dense format for x is supported");}
+    if (x_desc["format"] != "CVEC") {throw std::runtime_error("Only sparse list format for x is supported");}
     if (A_desc["data_types"]["pointers_to_1"] == "int32" &&
         A_desc["data_types"]["values"] == "float64") {
             experiment_spmspv_csr<double, int32_t>(params);
@@ -39,6 +39,7 @@ void experiment_spmspv_csr(benchmark_params_t params){
     int m = A_desc["shape"][0];
     int n = A_desc["shape"][1];
 
+    auto x_idx = npy_load_vector<I>(fs::path(params.input)/"x.bspnpy"/"indices_0.npy");
     auto x_val = npy_load_vector<T>(fs::path(params.input)/"x.bspnpy"/"values.npy");
     auto A_ptr = npy_load_vector<I>(fs::path(params.input)/"A.bspnpy"/"pointers_to_1.npy");
     auto A_idx = npy_load_vector<I>(fs::path(params.input)/"A.bspnpy"/"indices_1.npy");
@@ -51,11 +52,21 @@ void experiment_spmspv_csr(benchmark_params_t params){
     auto time = benchmark(
     []() {
     },
-        [&y_val, &A_ptr, &A_val, &A_idx, &x_val, &m, &n]() {
-            for(int i = 0; i < m; i++){
-                for(int p = A_ptr[i]; p < A_ptr[i+1]; p++){
+        [&y_val, &A_ptr, &A_val, &A_idx, &x_val, &m, &n, &x_idx, &z]() {
+            for(int i = 0; i < m; i++) {
+                for(int p = A_ptr[i]; p < A_ptr[i+1]; p++) {
                     int j = A_idx[p];
-                    y_val[i] += A_val[p] * x_val[j];
+                    int j_pos = -1;
+                    for(int q = 0; q < x_idx.size(); q++) {
+                        if(x_idx[q] == j) {
+                            j_pos = q;
+                            break;
+                        }
+                    }
+                    if(j_pos < 0) {
+                        continue;
+                    }
+                    y_val[i] += A_val[p] * x_val[j_pos];
                 }
             }
         }
