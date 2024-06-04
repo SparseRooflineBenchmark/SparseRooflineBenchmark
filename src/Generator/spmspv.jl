@@ -34,7 +34,7 @@ function spmspv_suitesparse(key; out = joinpath(@__DIR__, "../data"), ext="bspnp
     mkpath(out)
     Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
     Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(Tensor(Dense(SparseList(Element(0.0)))), 2, 1), A))
-    Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
+    Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(SparseList(Element(0.0))), x))
 end
 
 vuduc02_matrices = [
@@ -161,16 +161,53 @@ function spmspv_RMAT(;out = joinpath(@__DIR__, "../data"), ext="bspnpy", A_facto
     x = sprand(n,vdens)
     y = A * x
     mkpath(out)
-    Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(Dense(Element(0.0))), y))
+    Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(SparseList(Element(0.0))), y))
     Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(Tensor(Dense(SparseList(Element(0.0)))), 2, 1), A))
-    Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(Dense(Element(0.0))), x))
+    Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(SparseList(Element(0.0))), x))
+end
+
+function spmspv_test_command(args; kwargs...)
+    doc = """Generate an spmspv problem instance of a known matrix and vector.
+    This can be used to test the custom-made reference kernel implementation.
+        y[i] += A[i, j] * x[j]
+        A = [1 1 ; 0 0 ]
+        x = [1, 1]
+        y = [2, 0]
+
+        Usage:
+            generate.jl spmspv test [options]
+            generate.jl spmspv test --help
+
+        Options:
+            -o, --out <path>    Destination directory for the generated problem instances [default: ../test_known_matrices/spmspv]
+            -e, --ext <extension>    Generated tensor file format extension [default: bspnpy]
+            -h, --help          show this screen
+    """ 
+    parsed_args = docopt(doc, args)
+    spmspv_test(
+        out=parsed_args["--out"],
+        ext=parsed_args["--ext"],
+    )
+end
+
+function spmspv_test(;out = joinpath(@__DIR__, "../test_known_matrices/spmspv"), ext="bspnpy")
+    A = [1 1 ; 0 0 ]
+    m, n = size(A)
+    x = [1, 1]
+    y = [2, 0]
+    mkpath(out)
+    println(out)
+    Finch.fwrite(joinpath(out, "y_ref.$ext"), copyto!(Tensor(SparseList(Element(0.0))), y))
+    Finch.fwrite(joinpath(out, "A.$ext"), copyto!(swizzle(Tensor(Dense(SparseList(Element(0.0)))), 2, 1), A))
+    Finch.fwrite(joinpath(out, "x.$ext"), copyto!(Tensor(SparseList(Element(0.0))), x))
 end
 
 spmspv_commands = Dict(
     "suitesparse" => spmspv_suitesparse_command,
     "RMAT" => spmspv_RMAT_command,
     "vuduc02" => spmspv_vuduc02_command,
-    "langr" => spmspv_langr_command
+    "langr" => spmspv_langr_command,
+    "test" => spmspv_test_command
 )
 function spmspv_command(args)
     doc = """Generate spmspv problem instances.
@@ -185,6 +222,8 @@ function spmspv_command(args)
             matrix from the langr collection
         vuduc02
             matrix from the Vuduc paper
+        test
+            known matrices for testing purposes
 
     see generate.jl spmspv <dataset> --help for more information on each dataset
 
