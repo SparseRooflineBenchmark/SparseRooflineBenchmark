@@ -85,8 +85,6 @@ benchmark_params_t parse(int argc, char **argv) {
   int c;
   benchmark_params_t params;
   params.verbose = false;
-  // Suppress getopt_long error messages
-  opterr = 0;
   while ((c = getopt_long(argc, argv, "hi:o:v", long_options, &option_index)) != -1) {
     switch (c) {
       case 'h':
