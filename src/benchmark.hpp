@@ -55,9 +55,13 @@ std::vector<T> npy_load_vector(std::string fname) {
 }
 
 template <typename T>
-void npy_store_vector(std::string fname, std::vector<T> vec) {
-  std::vector<unsigned long> shape = {vec.size(),};
-  npy::SaveArrayAsNumpy(fname, false, shape.size(), shape.data(), vec);
+//void npy_store_vector(std::string fname, std::vector<T> vec) {
+  //std::vector<unsigned long> shape = {vec.size(),};
+  //npy::SaveArrayAsNumpy(fname, false, shape.size(), shape.data(), vec);
+//}
+void npy_store_vector(std::string fname, std::vector<T> vec, bool fortran_order = false) {
+    std::vector<unsigned long> shape = {static_cast<unsigned long>(vec.size())};
+    npy::SaveArrayAsNumpy(fname, fortran_order, shape.size(), shape.data(), vec);
 }
 
 void experiment(std::string input, std::string output, int verbose);
