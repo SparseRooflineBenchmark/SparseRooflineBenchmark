@@ -29,7 +29,7 @@ jobs:
                     version: ${{ matrix.version }}
                     arch: ${{ matrix.arch }}
             - uses: julia-actions/julia-buildpkg@v1
-            - run: ./build.sh
+            - run: ./test.sh
               shell: bash
             
 

@@ -18,10 +18,11 @@ using StatsBase
 
 include("util.jl")
 include("spmv.jl")
+include("spmm.jl")
 
 kernel_commands = Dict(
     "spmv" => spmv_command,
-#    "spmm" => spmm_command,
+    "spmm" => spmm_command,
 )
 
 function main(args)
