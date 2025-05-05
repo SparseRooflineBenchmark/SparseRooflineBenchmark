@@ -1,4 +1,4 @@
-#include "../src/benchmark.hpp"
+#include "../../src/benchmark.hpp"
 #include <sys/stat.h>
 #include <iostream>
 #include <cstdint>
