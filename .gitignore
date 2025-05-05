@@ -6,4 +6,7 @@ Manifest.toml
 */*/Manifest.toml
 *.json
 *.bspnpy
+*.hdf5
+*.mtx
+**/a.out
 *.code-workspace

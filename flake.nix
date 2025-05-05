@@ -70,8 +70,8 @@
               src = pkgs.fetchFromGitHub {
                 owner = "GraphBLAS";
                 repo = "binsparse-reference-c";
-                rev = "fbf3902a2aa378477a35adc4315f006fd18f07ee";
-                hash = "sha256-gnNuc0+dRxj8MIaA+DufJOJgwpKu+Nmc0HrR84/pGao=";
+                rev = "42d50744b2b7f85b7122125c7e88c7a3168864f0";
+                hash = "sha256-a1rvwyrxbrLSVbJyLft6KYDm8e9YfrQYM3rzJxmIvSU=";
               };
 
               propagatedBuildInputs = with pkgs; [ hdf5 cjson ];

@@ -20,11 +20,11 @@ void experiment_spgemm_csr(benchmark_params_t params, bsp_matrix_t A, bsp_matrix
 int main(int argc, char **argv) {
     auto params = parse(argc, argv);
 
-    std::cout << "Reading A from: " << (realpath((fs::path(params.input) / "A.hdf5").c_str(), NULL)) << std::endl;
-    std::cout << "Reading B from: " << (realpath((fs::path(params.input) / "B.hdf5").c_str(), NULL)) << std::endl;
+    std::cout << "Reading A from: " << (realpath((fs::path(params.input) / "662_bus.hdf5").c_str(), NULL)) << std::endl;
+    std::cout << "Reading B from: " << (realpath((fs::path(params.input) / "662_bus.hdf5").c_str(), NULL)) << std::endl;
     
-    bsp_matrix_t A = bsp_read_matrix((realpath((fs::path(params.input) / "A.hdf5").c_str(), NULL)), NULL);
-    bsp_matrix_t B = bsp_read_matrix((realpath((fs::path(params.input) / "B.hdf5").c_str(), NULL)), NULL);
+    bsp_matrix_t A = bsp_read_matrix((realpath((fs::path(params.input) / "662_bus.hdf5").c_str(), NULL)), NULL);
+    bsp_matrix_t B = bsp_read_matrix((realpath((fs::path(params.input) / "662_bus.hdf5").c_str(), NULL)), NULL);
 
     std::cout << "Inputs read successfully!" << std::endl;
 
@@ -39,35 +39,39 @@ int main(int argc, char **argv) {
     bsp_print_matrix_info(A);
 
     float* vals = (float *) A.values.data;
-    for (int i = 0; i < A.values.size; i++){
-        // float x;
-        // bsp_array_read(A.values, i, x);
-        // std::cout << "v:" << x << " " << std::endl;
-        std::cout << "v:" << vals[i] << " ";
-    }
+    // for (int i = 0; i < A.values.size; i++){
+    //     // float x;
+    //     // bsp_array_read(A.values, i, x);
+    //     // std::cout << "v:" << x << " " << std::endl;
+    //     std::cout << "v:" << vals[i] << " ";
+    // }
     std::cout << std::endl;
-    uint8_t* i1s = (uint8_t *) A.indices_1.data;
-    for (int i = 0; i < A.indices_1.size; i++){
-        // uint8_t x;
-        // bsp_array_read(A.indices_1, i, x);
-        std::cout << "i1:" << ((int) i1s[i]) << " ";
-    }
+
+    uint16_t* i1s = (uint16_t *) A.indices_1.data;
+    // for (int i = 0; i < A.indices_1.size; i++){
+    //     // uint8_t x;
+    //     // bsp_array_read(A.indices_1, i, x);
+    //     std::cout << "i1:" << ((int) i1s[i]) << " ";
+    // }
     std::cout << std::endl;
-    uint8_t* pt1s = (uint8_t *) A.pointers_to_1.data;
+    uint16_t* pt1s = (uint16_t *) A.pointers_to_1.data;
     for (int i = 0; i < A.pointers_to_1.size; i++){
         // uint8_t *apt = (uint8_t *) A.pointers_to_1.data;
         // bsp_array_read(A.pointers_to_1, i, apt[i]);
         std::cout << "pt1:" << (int) pt1s[i] << " ";
     }
     std::cout << std::endl;
-
+    //print A.values.type
+    //std::cout << "AAAAAAAAA type: " << A.values.type << std::endl;
     switch (A.values.type){
         case BSP_FLOAT32:
             experiment_spgemm_csr<float, int>(params, A, B);
+            break;
         case BSP_FLOAT64:
             experiment_spgemm_csr<double, int>(params, A, B);
+            break;
         default:
-            std::cout << "type: " << A.values.type << std::endl;
+            //std::cout << "type: " << A.values.type << std::endl;
             throw std::runtime_error("bad type!");
     }
 
@@ -81,11 +85,11 @@ int main(int argc, char **argv) {
 template <typename T, typename I>
 void experiment_spgemm_csr(benchmark_params_t params, bsp_matrix_t A, bsp_matrix_t B) { 
 
-    bsp_array_t A_ptr = A.indices_0;
+    bsp_array_t A_ptr = A.pointers_to_1;
     bsp_array_t A_idx = A.indices_1;
     bsp_array_t A_val = A.values;
 
-    bsp_array_t B_ptr = B.indices_0;
+    bsp_array_t B_ptr = B.pointers_to_1;
     bsp_array_t B_idx = B.indices_1;
     bsp_array_t B_val = B.values;
 
@@ -105,35 +109,39 @@ void experiment_spgemm_csr(benchmark_params_t params, bsp_matrix_t A, bsp_matrix
     bsp_array_read(A.values, 3, test);
     std::cout << "A.values" << test << std::endl;
 
-    // perform SpGEMM (A * B = C)
+    //perform SpGEMM (A * B = C)
     auto time = benchmark(
         []() {}, 
         [&A_ptr, &A_idx, &A_val, &B_ptr, &B_idx, &B_val, &tempC, m, k, n]() {
             int p, pmax, a_col, q, qmax, b_col;
             T val_a, val_b;
-            for (int i = 0; i < A_val.size; i++){
-                float x;
-                bsp_array_read(A_val, i, x);
-                std::cout << "v" << x << " " << std::endl;
+            for (int i = 0; i < m; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    tempC[i][j] = 0;
+                }
             }
             for (int i = 0; i < m; ++i) {
+                bsp_array_read(A_ptr, i, p);
                 bsp_array_read(A_ptr, i + 1, pmax);
-                std::cout << pmax << std::endl;
-                for (bsp_array_read(A_ptr, i, p); p < pmax; ++p) {
+    
+                for (; p < pmax; ++p) {
                     bsp_array_read(A_idx, p, a_col);
                     bsp_array_read(A_val, p, val_a);
-                    
+    
+                    bsp_array_read(B_ptr, a_col, q);
                     bsp_array_read(B_ptr, a_col + 1, qmax);
-                    for (bsp_array_read(B_ptr, a_col, q); q < qmax; ++q) {
+    
+                    for (; q < qmax; ++q) {
                         bsp_array_read(B_idx, q, b_col);
                         bsp_array_read(B_val, q, val_b);
-
-                        tempC[i][b_col] += val_b * val_b;
+    
+                        tempC[i][b_col] += val_a * val_b; 
                     }
                 }
             }
         }
     );
+    //print tempC
 
     std::cout << "bleh" << std::endl;
     // tempC into CSR format -> result matrix
@@ -146,34 +154,43 @@ void experiment_spgemm_csr(benchmark_params_t params, bsp_matrix_t A, bsp_matrix
 		}
 	  	C_ptr[i + 1] = C_idx.size();
 	}
-
+    //print C_val
+    // for (int i = 0; i < C_val.size(); i++){
+    //     std::cout << "C_val:" << C_val[i] << " ";
+    // }
+    std::cout << "done" << std::endl;
     bsp_matrix_t C = bsp_construct_default_matrix_t();
     C.format = BSP_CSR;
     C.nrows = m;
     C.ncols = n;
     C.nnz = C_val.size();
+    std::cout << "done1" << std::endl;
+    //C.values = bsp_construct_default_array_t();
+   
+    C.values = bsp_construct_array_t(C.nnz, BSP_FLOAT64);
+    memcpy(C.values.data, C_val.data(), C.nnz * sizeof(double));
+    std::cout << "done2" << std::endl;
+    C.pointers_to_1 = bsp_construct_array_t(C_ptr.size(), BSP_INT32);
+    memcpy(C.pointers_to_1.data, C_ptr.data(), C_ptr.size() * sizeof(int32_t));
 
-    C.values = bsp_construct_default_array_t();
-    C.values.data = C_val.data();
-    C.values.size = C.nnz;
-
-    C.indices_0 = bsp_construct_default_array_t();
-    C.indices_0.data = C_ptr.data();
-    C.indices_0.size = C_ptr.size();
-    
-    C.indices_1 = bsp_construct_default_array_t();
-    C.indices_1.data = C_idx.data();
-    C.indices_1.size = C_idx.size();
-
+// Allocate and copy for C.indices_1
+    C.indices_1 = bsp_construct_array_t(C_idx.size(), BSP_INT32);   
+    memcpy(C.indices_1.data, C_idx.data(), C_idx.size() * sizeof(int32_t));
+    std::cout << "done4" << std::endl;
     bsp_write_matrix((fs::path(params.output) / "C.hdf5").string().c_str(), C, NULL, NULL, 9);
-    bsp_destroy_matrix_t(C);
-
-    // benchmark measurements
+    std::cout << "done5" << std::endl;
+    //bsp_destroy_matrix_t(C);
+    std::cout << "done6" << std::endl;
+    // benchmark measurement
     json measurements;
+    std::cout << "done7" << std::endl;
     measurements["time"] = time;
+    std::cout << time << std::endl;
     measurements["memory"] = 0;
+    std::cout << "done8" << std::endl;
     std::ofstream measurements_file(fs::path(params.output) / "measurements.json");
+    std::cout << "done9" << std::endl;
     measurements_file << measurements;
     measurements_file.close();
+    std::cout << "done10" << std::endl;
 }
-
